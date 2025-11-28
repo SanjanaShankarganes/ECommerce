@@ -39,8 +39,17 @@ RUN for i in 1 2 3; do \
     done
 
 # Create elasticsearch user (Elasticsearch cannot run as root)
-RUN groupadd -g 1000 elasticsearch && \
-    useradd -u 1000 -g elasticsearch -s /bin/bash -m elasticsearch
+# Check if UID/GID 1000 exists, if so use different ID
+RUN if getent group 1000 >/dev/null 2>&1; then \
+        groupadd -g 1001 elasticsearch; \
+    else \
+        groupadd -g 1000 elasticsearch; \
+    fi && \
+    if getent passwd 1000 >/dev/null 2>&1; then \
+        useradd -u 1001 -g elasticsearch -s /bin/bash -m elasticsearch; \
+    else \
+        useradd -u 1000 -g elasticsearch -s /bin/bash -m elasticsearch; \
+    fi
 
 # Install Elasticsearch
 ENV ES_VERSION=8.11.0
