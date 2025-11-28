@@ -1,0 +1,1 @@
+# Solr-search-implementation

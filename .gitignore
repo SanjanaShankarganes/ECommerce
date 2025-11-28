@@ -1,0 +1,32 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+Backend/node_modules/
+Frontend/node_modules/
+
+# Build outputs
+Frontend/dist/
+Frontend/build/
+
+# Database files (keep structure, ignore data)
+Backend/data/*.db
+Backend/data/*.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+

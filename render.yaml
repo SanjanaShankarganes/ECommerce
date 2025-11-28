@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: catalogue-backend
+    env: node
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: ELASTICSEARCH_URL
+        sync: false  # Set this in Render dashboard
+      - key: CORS_ORIGIN
+        sync: false  # Set this to your frontend URL
+
+  - type: web
+    name: catalogue-frontend
+    env: static
+    buildCommand: cd Frontend && npm install && npm run build
+    staticPublishPath: ./Frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false  # Set this to your backend URL
+
