@@ -1,15 +1,16 @@
 # Multi-stage build for Catalogue App with Frontend, Backend, and Elasticsearch
-FROM node:22-slim AS frontend-build
+FROM node:22 AS frontend-build
 
 # Build Frontend
 WORKDIR /app/frontend
 COPY Frontend/package*.json ./
-RUN npm install
+# Install with retry logic for network issues
+RUN for i in 1 2 3; do npm install && break || sleep 10; done
 COPY Frontend/ .
 RUN npm run build
 
 # Backend stage
-FROM node:22-slim AS backend
+FROM node:22 AS backend
 
 # Install build tools for native modules (sqlite3)
 RUN apt-get update && \
@@ -19,17 +20,23 @@ RUN apt-get update && \
 
 WORKDIR /app/backend
 COPY Backend/package*.json ./
-RUN npm install --production
+# Workaround for SSL issues - retry with different npm configs
+RUN npm config set registry https://registry.npmjs.org/ && \
+    for i in 1 2 3; do npm install --production && break || (sleep 10 && npm cache clean --force); done
 COPY Backend/ .
 
 # Final stage - combine everything
-FROM node:22-slim
+FROM node:22
 
 # Install system dependencies and Java (required for Elasticsearch)
-RUN apt-get update && \
-    apt-get install -y curl wget gnupg2 openjdk-17-jdk && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Retry on network/hash errors
+RUN for i in 1 2 3; do \
+        apt-get update && \
+        apt-get install -y curl wget gnupg2 openjdk-17-jdk && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/* && \
+        break || sleep 10; \
+    done
 
 # Install Elasticsearch
 ENV ES_VERSION=8.11.0
