@@ -5,14 +5,18 @@ const productTableRoutes = require('./routes/productTable');
 const cors = require('cors');
 
 const corsOptions = {
-    origin: '*',
-    credentials: false,
-    optionSuccessStatus: 200,
-}
+    origin: [
+        "https://catalogue-5z8asn9ap-kavin1008s-projects.vercel.app"
+    ],
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type,Authorization",
+};
+
  
  
 const app = express();
 app.use(cors(corsOptions))
+app.options('*', cors(corsOptions)); // Handle preflight
 app.use(bodyParser.json());
 
 // Health check endpoint
