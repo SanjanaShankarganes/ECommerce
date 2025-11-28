@@ -12,12 +12,6 @@ Frontend/node_modules/
 Frontend/dist/
 Frontend/build/
 
-# Database files (keep structure, ignore data)
-Backend/data/*.db
-Backend/data/*.db-journal
-Backend/*.db
-Backend/*.db-journal
-
 # Logs
 *.log
 npm-debug.log*
