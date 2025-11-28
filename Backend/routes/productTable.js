@@ -369,9 +369,20 @@ router.get('/search', async (req, res) => {
       ? `${process.env.ELASTICSEARCH_URL}/products/_search`
       : `http://localhost:9200/products/_search`;
     
-    const esResponse = await axios.post(elasticsearchUrl, esQuery, {
+    // Configure request with authentication for Elastic Cloud
+    const esConfig = {
       headers: { 'Content-Type': 'application/json' }
-    });
+    };
+    
+    // Add authentication if credentials are provided (for Elastic Cloud)
+    if (process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD) {
+      esConfig.auth = {
+        username: process.env.ELASTICSEARCH_USERNAME,
+        password: process.env.ELASTICSEARCH_PASSWORD
+      };
+    }
+    
+    const esResponse = await axios.post(elasticsearchUrl, esQuery, esConfig);
 
     const hits = esResponse.data.hits;
     const products = hits.hits.map(hit => hit._source);

@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const axios = require('axios');
 const path = require('path');
+require('dotenv').config(); // Load environment variables
 
 const dbPath = path.join(__dirname, '..', 'data', 'categories.db');
 const db = new sqlite3.Database(dbPath);
@@ -8,10 +9,22 @@ const db = new sqlite3.Database(dbPath);
 const elasticsearchUrl = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
 const indexName = 'products';
 
+// Configure axios with authentication if credentials provided (for Elastic Cloud)
+const axiosConfig = {
+  headers: { 'Content-Type': 'application/json' }
+};
+
+if (process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD) {
+  axiosConfig.auth = {
+    username: process.env.ELASTICSEARCH_USERNAME,
+    password: process.env.ELASTICSEARCH_PASSWORD
+  };
+}
+
 async function createIndexIfNotExists() {
     try {
         // Check if index exists
-        await axios.get(`${elasticsearchUrl}/${indexName}`);
+        await axios.get(`${elasticsearchUrl}/${indexName}`, axiosConfig);
         console.log(`Index ${indexName} already exists`);
     } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -107,9 +120,7 @@ async function createIndexIfNotExists() {
                     }
                 };
                 
-                await axios.put(`${elasticsearchUrl}/${indexName}`, indexMapping, {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                await axios.put(`${elasticsearchUrl}/${indexName}`, indexMapping, axiosConfig);
                 console.log(`Index ${indexName} created successfully`);
             } catch (createError) {
                 console.error('Error creating index:', createError.message);
@@ -159,12 +170,13 @@ db.all('SELECT * FROM products', [], async (err, rows) => {
         const ndjsonBody = bulkBody.map(item => JSON.stringify(item)).join('\n') + '\n';
 
         // Bulk index documents
+        const bulkConfig = { ...axiosConfig, headers: { 'Content-Type': 'application/x-ndjson' } };
+        if (axiosConfig.auth) bulkConfig.auth = axiosConfig.auth;
+        
         const response = await axios.post(
             `${elasticsearchUrl}/_bulk`,
             ndjsonBody,
-            {
-                headers: { 'Content-Type': 'application/x-ndjson' }
-            }
+            bulkConfig
         );
 
         if (response.data.errors) {
