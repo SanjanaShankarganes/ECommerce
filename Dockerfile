@@ -38,6 +38,10 @@ RUN for i in 1 2 3; do \
         break || sleep 10; \
     done
 
+# Create elasticsearch user (Elasticsearch cannot run as root)
+RUN groupadd -g 1000 elasticsearch && \
+    useradd -u 1000 -g elasticsearch -s /bin/bash -m elasticsearch
+
 # Install Elasticsearch
 ENV ES_VERSION=8.11.0
 RUN wget -q https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz && \
@@ -57,6 +61,11 @@ COPY elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml
 # Configure JVM options
 RUN echo '-Xms256m' > /usr/share/elasticsearch/config/jvm.options.d/heap.options && \
     echo '-Xmx256m' >> /usr/share/elasticsearch/config/jvm.options.d/heap.options
+
+# Set proper ownership for Elasticsearch directories
+RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch && \
+    chown -R elasticsearch:elasticsearch /var/lib/elasticsearch && \
+    chown -R elasticsearch:elasticsearch /var/log/elasticsearch
 
 # Copy frontend build
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist

@@ -11,8 +11,13 @@ export ES_JAVA_OPTS="-Xms256m -Xmx256m"
 export ES_HOME=/usr/share/elasticsearch
 export ES_PATH_CONF=/usr/share/elasticsearch/config
 
-# Start Elasticsearch
-/usr/share/elasticsearch/bin/elasticsearch -d -p /tmp/elasticsearch.pid
+# Create pid directory with proper permissions
+mkdir -p /tmp/elasticsearch
+chown elasticsearch:elasticsearch /tmp/elasticsearch
+
+# Start Elasticsearch as elasticsearch user (not root)
+echo "Starting Elasticsearch as elasticsearch user..."
+su - elasticsearch -c "cd /usr/share/elasticsearch && ES_HOME=/usr/share/elasticsearch ES_PATH_CONF=/usr/share/elasticsearch/config ES_JAVA_OPTS='-Xms256m -Xmx256m' JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:\$PATH /usr/share/elasticsearch/bin/elasticsearch -d -p /tmp/elasticsearch/elasticsearch.pid"
 
 # Wait for Elasticsearch to be ready
 echo "Waiting for Elasticsearch..."
