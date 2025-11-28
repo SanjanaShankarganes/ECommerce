@@ -5,6 +5,13 @@ set -e
 echo "Starting Elasticsearch..."
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 export PATH=$JAVA_HOME/bin:$PATH
+export ES_JAVA_OPTS="-Xms256m -Xmx256m"
+
+# Set Elasticsearch paths
+export ES_HOME=/usr/share/elasticsearch
+export ES_PATH_CONF=/usr/share/elasticsearch/config
+
+# Start Elasticsearch
 /usr/share/elasticsearch/bin/elasticsearch -d -p /tmp/elasticsearch.pid
 
 # Wait for Elasticsearch to be ready

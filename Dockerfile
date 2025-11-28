@@ -38,15 +38,18 @@ RUN wget -q https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$
     mv elasticsearch-${ES_VERSION} /usr/share/elasticsearch && \
     rm elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz && \
     mkdir -p /var/lib/elasticsearch && \
-    mkdir -p /var/log/elasticsearch
+    mkdir -p /var/log/elasticsearch && \
+    mkdir -p /usr/share/elasticsearch/config/jvm.options.d
 
-# Configure Elasticsearch
-RUN echo "discovery.type=single-node" > /usr/share/elasticsearch/config/elasticsearch.yml && \
-    echo "xpack.security.enabled=false" >> /usr/share/elasticsearch/config/elasticsearch.yml && \
-    echo "network.host: 0.0.0.0" >> /usr/share/elasticsearch/config/elasticsearch.yml && \
-    echo "http.port: 9200" >> /usr/share/elasticsearch/config/elasticsearch.yml && \
-    echo "-Xms256m" > /usr/share/elasticsearch/config/jvm.options.d/heap.options && \
-    echo "-Xmx256m" >> /usr/share/elasticsearch/config/jvm.options.d/heap.options
+# Remove any existing JSON config files (Elasticsearch 8.x might have them)
+RUN rm -f /usr/share/elasticsearch/config/elasticsearch.json 2>/dev/null || true
+
+# Copy Elasticsearch config file
+COPY elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml
+
+# Configure JVM options
+RUN echo '-Xms256m' > /usr/share/elasticsearch/config/jvm.options.d/heap.options && \
+    echo '-Xmx256m' >> /usr/share/elasticsearch/config/jvm.options.d/heap.options
 
 # Copy frontend build
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
