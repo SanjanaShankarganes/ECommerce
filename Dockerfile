@@ -11,6 +11,12 @@ RUN npm run build
 # Backend stage
 FROM node:22-slim AS backend
 
+# Install build tools for native modules (sqlite3)
+RUN apt-get update && \
+    apt-get install -y python3 make g++ && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app/backend
 COPY Backend/package*.json ./
 RUN npm install --production
@@ -19,15 +25,9 @@ COPY Backend/ .
 # Final stage - combine everything
 FROM node:22-slim
 
-# Install system dependencies
+# Install system dependencies and Java (required for Elasticsearch)
 RUN apt-get update && \
-    apt-get install -y curl wget gnupg2 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install Java (required for Elasticsearch)
-RUN apt-get update && \
-    apt-get install -y openjdk-17-jdk && \
+    apt-get install -y curl wget gnupg2 openjdk-17-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
