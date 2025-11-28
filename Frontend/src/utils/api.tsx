@@ -1,6 +1,8 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// In production, use relative URL (same origin). In development, use localhost.
+const API_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:5000/api');
 
 const apiClient = axios.create({
   baseURL: API_URL,
