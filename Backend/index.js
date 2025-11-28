@@ -5,8 +5,8 @@ const productTableRoutes = require('./routes/productTable');
 const cors = require('cors');
 
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || 'https://catalogue-zeta-lemon.vercel.app/',
-    credentials: true,
+    origin: '*',
+    credentials: false,
     optionSuccessStatus: 200,
 }
  
