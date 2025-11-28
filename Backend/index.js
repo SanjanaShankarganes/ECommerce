@@ -1,15 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const categoryTableRoutes = require('./routes/categoryTable');
 const productTableRoutes = require('./routes/productTable');
 const cors = require('cors');
 
 const corsOptions = {
-    origin: [
-        "https://catalogue-5z8asn9ap-kavin1008s-projects.vercel.app"
-    ],
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization",
+    credentials: false,
 };
 
  
@@ -26,6 +26,19 @@ app.get('/health', (req, res) => {
 
 app.use('/api', categoryTableRoutes);
 app.use('/api', productTableRoutes);
+
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../frontend/dist');
+  app.use(express.static(frontendPath));
+  
+  // Serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(frontendPath, 'index.html'));
+    }
+  });
+}
 
 const PORT = process.env.PORT || 5004;
 app.listen(PORT, '0.0.0.0', () => {
