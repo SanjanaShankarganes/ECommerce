@@ -6,7 +6,7 @@ const productTableRoutes = require('./routes/productTable');
 const cors = require('cors');
 
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+    origin: '*',
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization",
     credentials: false,
